@@ -1,6 +1,8 @@
 
 ## Create a terraform version file
 ```bash
+#main.tf
+
 terraform {
   required_providers {
     aws = {
@@ -13,6 +15,8 @@ terraform {
 
 ## Create a provider.
 ```
+#provider.tf
+
 provider "aws" {
   region  = "us-west-2" #The region where the environment
   #is going to be deployed # Use your own region here
@@ -20,17 +24,55 @@ provider "aws" {
 ```
 ## Create a ecr cluster
 ```bash
+#ecs-cluster.tf
+
 resource "aws_ecr_repository" "app_ecr_repo" {
   name = "app-repo"
 }
 ```
 
 Note:: Create a IAM role "ecsTaskExecutionRole" with below policy
+```bash
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ecr:GetAuthorizationToken",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:BatchGetImage",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+```
+Trust relationship
+```bash
 
-
+{
+    "Version": "2008-10-17",
+    "Statement": [
+        {
+            "Sid": "",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "ecs-tasks.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+        }
+    ]
+}
+```
 
 ## Create a task definition for ecs cluster
 ```bash
+#ecs-taskdf.tf
+
 resource "aws_ecs_task_definition" "app_task" {
   family                   = "app-first-task" # Name your task
   container_definitions    = <<DEFINITION
@@ -61,11 +103,10 @@ resource "aws_ecs_task_definition" "app_task" {
 
 
 
-
-
-
 ## Create a SG
+
 ```bash
+#sg.tf
 locals {
 vpc = "vpc-0956XXXXXX9c10b8e"
 
@@ -97,6 +138,7 @@ resource "aws_security_group" "security_group" {
 
 ## Create a ecs-ALB
 ```bash
+#ecs-alb.tf
 resource "aws_alb" "application_load_balancer" {
   name               = "load-balancer-dev" #load balancer name
   internal           = true
@@ -112,6 +154,7 @@ resource "aws_alb" "application_load_balancer" {
 ## Create a target group
 
 ```bash
+#target.tf
 resource "aws_lb_target_group" "target_group" {
   name        = "target-group"
   port        = 8080
@@ -133,6 +176,7 @@ resource "aws_lb_listener" "listener" {
 
 ## Create a service
 ```bash
+#ecs-services.tf
 resource "aws_ecs_service" "app_service" {
   name            = "app-first-service"     # Name the service
   cluster         = "${aws_ecs_cluster.my_cluster.id}"   # Reference the created Cluster
@@ -154,4 +198,3 @@ resource "aws_ecs_service" "app_service" {
 }
 ```
 
-##
