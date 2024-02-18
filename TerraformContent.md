@@ -1,3 +1,8 @@
+## Pre-steps
+
+
+
+
 
 ## Create a terraform version file
 ```bash
@@ -30,6 +35,8 @@ resource "aws_ecr_repository" "app_ecr_repo" {
   name = "app-repo"
 }
 ```
+
+## push the docker image to ECR manually ; command will shared the AWS ecr "Push" option
 
 Note:: Create a IAM role "ecsTaskExecutionRole" with below policy
 ```bash
